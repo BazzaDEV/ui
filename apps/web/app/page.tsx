@@ -1,11 +1,12 @@
-import { GithubIcon, UserJotIcon, XIcon } from '@/components/icons'
+import DataTableDemo from '@/components/data-table-filter/demo'
+import { BazzaUIIcon, GithubIcon, UserJotIcon, XIcon } from '@/components/icons'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import logoSrc from '@/public/bazzaui-v3-color.png'
-import bazza_uiSrc from '@/public/bazzaui-v3-color.png'
 import { ArrowRightIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
 export default function Page() {
   return (
@@ -43,19 +44,22 @@ export default function Page() {
         </div>
       </div>
       <div className="border-y border-border border-dashed">
-        <div className="px-4 py-48 max-w-screen-xl w-full mx-auto border-border border-y-0 border-dashed xl:border-x flex flex-col lg:flex-row items-center gap-x-12 gap-y-12 lg:justify-between border">
+        <div className="px-4 py-16 sm:py-32 max-w-screen-xl w-full mx-auto border-border border-y-0 border-dashed xl:border-x flex flex-col-reverse lg:flex-row items-center gap-x-12 gap-y-12 lg:justify-between border">
           <div className="flex lg:flex-row flex-col gap-8 max-w-4xl">
             <div className="flex flex-col gap-8 w-full">
               <div className="flex justify-between items-center gap-4">
                 <div className="space-y-8">
-                  <h1 className="text-5xl lg:text-6xl font-[538] tracking-[-0.03em] drop-shadow-xs text-center lg:text-left">
-                    A React component library with hand-crafted, modern
+                  <h1 className="text-3xl sm:text-5xl lg:text-6xl font-[538] tracking-[-0.03em] drop-shadow-xs text-center lg:text-left">
+                    A React component library with{' '}
+                    <span className="inline whitespace-nowrap">
+                      hand-crafted
+                    </span>
+                    , modern
+                    <span className="lg:inline hidden">, and powerful</span>{' '}
                     components.
                   </h1>
-                  <div className="*:text-lg leading-none *:lg:text-xl *:tracking-[-0.01em] *:font-[410] text-neutral-800 dark:text-neutral-300 flex flex-col gap-1 text-center lg:text-left">
-                    <span>
-                      Powerful components for building your next project.
-                    </span>
+                  <div className="*:text-base sm:*:text-lg leading-none *:lg:text-xl *:tracking-[-0.01em] *:font-[410] text-neutral-800 dark:text-neutral-300 flex flex-col gap-1 text-center lg:text-left">
+                    <span>Powerful components for your next project.</span>
                     <span>Built with shadcn/ui, TanStack Table, and more.</span>
                     <span className="!font-[538] dark:text-primary">
                       Open source. Open code. Free to use.
@@ -76,16 +80,39 @@ export default function Page() {
               </div>
             </div>
           </div>
-          <Image src={bazza_uiSrc} alt="bazza/ui" className="drop-shadow-2xl" />
+          <BazzaUIIcon className="drop-shadow-2xl h-auto w-[150px] sm:w-[300px] lg:w-[900px]" />
         </div>
       </div>
       <div className="border-b border-border border-dashed">
-        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed xl:border-x text-center flex flex-col items-center gap-16">
-          <div className="space-y-8">
-            <h2 className="text-4xl lg:text-5xl font-[538] tracking-[-0.03em] drop-shadow-xs">
+        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed xl:border-x text-center flex flex-col items-center gap-12 sm:gap-16">
+          <div className="space-y-6 sm:space-y-8">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-[538] tracking-[-0.03em] drop-shadow-xs">
+              Playground
+            </h2>
+            <div className="text-base sm:text-lg lg:text-lg tracking-[-0.01em] font-[510] text-neutral-600 dark:text-neutral-300 space-y-1 sm:space-y-0">
+              <p>
+                Our first component is a data table filter, built with shadcn/ui
+                and TanStack Table.
+              </p>
+              <p>
+                It's a powerful component that allows you to filter your data
+                table with ease.
+              </p>
+              <p>Take it for a spin in the playground below.</p>
+            </div>
+          </div>
+          <Suspense>
+            <DataTableDemo />
+          </Suspense>
+        </div>
+      </div>
+      <div className="border-b border-border border-dashed">
+        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed xl:border-x text-center flex flex-col items-center gap-12 sm:gap-16">
+          <div className="space-y-4 sm:space-y-8">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-[538] tracking-[-0.03em] drop-shadow-xs">
               Sponsors
             </h2>
-            <p className="text-lg lg:text-lg tracking-[-0.01em] font-[510] text-neutral-600 dark:text-neutral-300 leading-none">
+            <p className="text-base sm:text-lg lg:text-lg tracking-[-0.01em] font-[510] text-neutral-600 dark:text-neutral-300">
               We wouldn't be able to build this without the support of our
               amazing sponsors.
             </p>
@@ -95,8 +122,8 @@ export default function Page() {
               className="flex justify-center items-end gap-3 dark:text-neutral-200 dark:hover:text-white text-neutral-700 hover:text-black transition-all hover:scale-105"
               href="https://userjot.com"
             >
-              <UserJotIcon className="size-8" />
-              <span className="text-xl font-[538] tracking-[-0.01em]">
+              <UserJotIcon className="size-6 sm:size-8" />
+              <span className="text-base sm:text-xl font-[538] tracking-[-0.01em]">
                 UserJot
               </span>
             </Link>
@@ -113,8 +140,8 @@ export default function Page() {
           </p>
         </div>
       </div>
-      <div className="border-b border-border border-dashed">
-        <div className="px-4 py-12 h-[400px] max-w-screen-xl w-full mx-auto border-border border-dashed xl:border-x text-center flex flex-col items-center gap-16"></div>
+      <div className="border-border border-dashed flex flex-col flex-1">
+        <div className="px-4 py-12 flex-1 h-full max-w-screen-xl w-full mx-auto border-border border-dashed xl:border-x"></div>
       </div>
     </div>
   )
