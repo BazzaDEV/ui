@@ -132,7 +132,7 @@ export default function Page() {
             Want to support bazza/ui?{' '}
             <Link
               href="/"
-              className="relative text-neutral-800 dark:text-neutral-200 group/sponsor-link"
+              className="relative text-neutral-800 dark:text-neutral-200 group/sponsor-link hover:underline underline-offset-2"
             >
               Become a sponsor.
               <ArrowRightIcon className="absolute ml-1 group-hover/sponsor-link:inline hidden size-4 translate-y-[-0.5px] stroke-[2.5] animate-in slide-in-from-left-1" />
