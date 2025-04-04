@@ -28,16 +28,16 @@ import {
   type ColumnDataType,
   type FilterModel,
   createNumberRange,
-  dateFilterDetails,
   determineNewOperator,
-  filterTypeOperatorDetails,
   getColumn,
   getColumnMeta,
+  getDateFilterDetails,
+  getFilterTypeOperatorDetails,
+  getMultiOptionFilterDetails,
+  getNumberFilterDetails,
+  getOptionFilterDetails,
+  getTextFilterDetails,
   isColumnOptionArray,
-  multiOptionFilterDetails,
-  numberFilterDetails,
-  optionFilterDetails,
-  textFilterDetails,
 } from '@/registry/data-table-filter/lib/filters'
 import type {
   ColumnOption,
@@ -59,34 +59,73 @@ import {
 } from 'react'
 import type { DateRange } from 'react-day-picker'
 
+type Locale = 'en' | 'fr'
+
+const translations: Record<Locale, Record<string, string>> = {
+  en: {
+    filter: 'Filter',
+    clear: 'Clear',
+    search: 'Search...',
+    noResults: 'No results.',
+    single: 'Single',
+    range: 'Range',
+    value: 'Value',
+    min: 'Min',
+    max: 'Max',
+    operators: 'Operators',
+  },
+  fr: {
+    filter: 'Filtrer',
+    clear: 'Effacer',
+    search: 'Rechercher...',
+    noResults: 'Aucun résultat.',
+    single: 'Unique',
+    range: 'Plage',
+    value: 'Valeur',
+    min: 'Min',
+    max: 'Max',
+    operators: 'Opérateurs',
+  },
+};
+
+// Helper function to get the translation
+function t(key: keyof typeof translations["en"], lang: keyof typeof translations = "en") {
+  return translations[lang][key] || translations["en"][key];
+}
+
+// Add a prop for locale to the DataTableFilter component
 export function DataTableFilter<TData, TValue>({
   table,
-}: { table: Table<TData> }) {
-  const isMobile = useIsMobile()
+  locale = "en",
+}: {
+  table: Table<TData>,
+  locale?: Locale,
+}) {
+  const isMobile = useIsMobile();
 
   if (isMobile) {
     return (
       <div className="flex w-full items-start justify-between gap-2">
         <div className="flex gap-1">
-          <FilterSelector table={table} />
-          <FilterActions table={table} />
+          <FilterSelector table={table} locale={locale} />
+          <FilterActions table={table} locale={locale} />
         </div>
         <ActiveFiltersMobileContainer>
-          <ActiveFilters table={table} />
+          <ActiveFilters table={table} locale={locale} />
         </ActiveFiltersMobileContainer>
       </div>
-    )
+    );
   }
 
   return (
     <div className="flex w-full items-start justify-between gap-2">
       <div className="flex md:flex-wrap gap-2 w-full flex-1">
-        <FilterSelector table={table} />
-        <ActiveFilters table={table} />
+        <FilterSelector table={table} locale={locale} />
+        <ActiveFilters table={table} locale={locale} />
       </div>
-      <FilterActions table={table} />
+      <FilterActions table={table} locale={locale} />
     </div>
-  )
+  );
 }
 
 export function ActiveFiltersMobileContainer({
@@ -158,7 +197,7 @@ export function ActiveFiltersMobileContainer({
   )
 }
 
-export function FilterActions<TData>({ table }: { table: Table<TData> }) {
+export function FilterActions<TData>({ table, locale }: { table: Table<TData>, locale: 'en' | 'fr' }) {
   const hasFilters = table.getState().columnFilters.length > 0
 
   function clearFilters() {
@@ -173,12 +212,12 @@ export function FilterActions<TData>({ table }: { table: Table<TData> }) {
       onClick={clearFilters}
     >
       <FilterXIcon />
-      <span className="hidden md:block">Clear</span>
+      <span className="hidden md:block">{t('clear', locale)}</span>
     </Button>
   )
 }
 
-export function FilterSelector<TData>({ table }: { table: Table<TData> }) {
+export function FilterSelector<TData>({ table, locale }: { table: Table<TData>, locale: 'en' | 'fr' }) {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState('')
   const [property, setProperty] = useState<string | undefined>(undefined)
@@ -212,6 +251,7 @@ export function FilterSelector<TData>({ table }: { table: Table<TData> }) {
           column={column}
           columnMeta={columnMeta}
           table={table}
+          locale={locale}
         />
       ) : (
         <Command loop>
@@ -219,9 +259,9 @@ export function FilterSelector<TData>({ table }: { table: Table<TData> }) {
             value={value}
             onValueChange={setValue}
             ref={inputRef}
-            placeholder="Search..."
+            placeholder={t('search', locale)}
           />
-          <CommandEmpty>No results.</CommandEmpty>
+          <CommandEmpty>{t('noResults', locale)}</CommandEmpty>
           <CommandList className="max-h-fit">
             <CommandGroup>
               {properties.map((column) => (
@@ -230,13 +270,14 @@ export function FilterSelector<TData>({ table }: { table: Table<TData> }) {
                   column={column}
                   table={table}
                   setProperty={setProperty}
+                  locale={locale}
                 />
               ))}
             </CommandGroup>
           </CommandList>
         </Command>
       ),
-    [property, column, columnMeta, value, table, properties],
+    [property, column, columnMeta, value, table, properties, locale],
   )
 
   return (
@@ -253,7 +294,7 @@ export function FilterSelector<TData>({ table }: { table: Table<TData> }) {
           className={cn('h-7', hasFilters && 'w-fit !px-2')}
         >
           <Filter className="size-4" />
-          {!hasFilters && <span>Filter</span>}
+          {!hasFilters && <span>{t('filter', locale)}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -270,10 +311,12 @@ export function FilterSelector<TData>({ table }: { table: Table<TData> }) {
 export function FilterableColumn<TData>({
   column,
   setProperty,
+  locale,
 }: {
   column: Column<TData>
   table: Table<TData>
   setProperty: (value: string) => void
+  locale: 'en' | 'fr'
 }) {
   const Icon = column.columnDef.meta?.icon!
   return (
@@ -322,7 +365,7 @@ export function DebouncedInput({
   )
 }
 
-export function ActiveFilters<TData>({ table }: { table: Table<TData> }) {
+export function ActiveFilters<TData>({ table, locale }: { table: Table<TData>, locale: Locale }) {
   const filters = table.getState().columnFilters
 
   return (
@@ -344,6 +387,7 @@ export function ActiveFilters<TData>({ table }: { table: Table<TData> }) {
               column,
               meta as ColumnMeta<TData, unknown> & { type: 'text' },
               table,
+              locale,
             )
           case 'number':
             return renderFilter<TData, 'number'>(
@@ -351,6 +395,7 @@ export function ActiveFilters<TData>({ table }: { table: Table<TData> }) {
               column,
               meta as ColumnMeta<TData, unknown> & { type: 'number' },
               table,
+              locale,
             )
           case 'date':
             return renderFilter<TData, 'date'>(
@@ -358,6 +403,7 @@ export function ActiveFilters<TData>({ table }: { table: Table<TData> }) {
               column,
               meta as ColumnMeta<TData, unknown> & { type: 'date' },
               table,
+              locale,
             )
           case 'option':
             return renderFilter<TData, 'option'>(
@@ -365,6 +411,7 @@ export function ActiveFilters<TData>({ table }: { table: Table<TData> }) {
               column,
               meta as ColumnMeta<TData, unknown> & { type: 'option' },
               table,
+              locale,
             )
           case 'multiOption':
             return renderFilter<TData, 'multiOption'>(
@@ -377,6 +424,7 @@ export function ActiveFilters<TData>({ table }: { table: Table<TData> }) {
                 type: 'multiOption'
               },
               table,
+              locale,
             )
           default:
             return null // Handle unknown types gracefully
@@ -392,6 +440,7 @@ function renderFilter<TData, T extends ColumnDataType>(
   column: Column<TData, unknown>,
   meta: ColumnMeta<TData, unknown> & { type: T },
   table: Table<TData>,
+  locale: Locale,
 ) {
   const { value } = filter
 
@@ -406,6 +455,7 @@ function renderFilter<TData, T extends ColumnDataType>(
         column={column}
         columnMeta={meta}
         filter={value} // Typed as FilterValue<T>
+        locale={locale}
       />
       <Separator orientation="vertical" />
       <FilterValue
@@ -413,6 +463,7 @@ function renderFilter<TData, T extends ColumnDataType>(
         column={column}
         columnMeta={meta}
         table={table}
+        locale={locale}
       />
       <Separator orientation="vertical" />
       <Button
@@ -451,10 +502,12 @@ export function FilterOperator<TData, T extends ColumnDataType>({
   column,
   columnMeta,
   filter,
+  locale,
 }: {
   column: Column<TData, unknown>
   columnMeta: ColumnMeta<TData, unknown>
   filter: FilterModel<T, TData>
+  locale: Locale
 }) {
   const [open, setOpen] = useState<boolean>(false)
 
@@ -467,7 +520,7 @@ export function FilterOperator<TData, T extends ColumnDataType>({
           variant="ghost"
           className="m-0 h-full w-fit whitespace-nowrap rounded-none p-0 px-2 text-xs"
         >
-          <FilterOperatorDisplay filter={filter} filterType={columnMeta.type} />
+          <FilterOperatorDisplay filter={filter} filterType={columnMeta.type} locale={locale} />
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -475,10 +528,10 @@ export function FilterOperator<TData, T extends ColumnDataType>({
         className="w-fit p-0 origin-(--radix-popover-content-transform-origin)"
       >
         <Command loop>
-          <CommandInput placeholder="Search..." />
-          <CommandEmpty>No results.</CommandEmpty>
+          <CommandInput placeholder={t('search', locale)} />
+          <CommandEmpty>{t('noResults')}</CommandEmpty>
           <CommandList className="max-h-fit">
-            <FilterOperatorController column={column} closeController={close} />
+            <FilterOperatorController column={column} closeController={close} locale={locale} />
           </CommandList>
         </Command>
       </PopoverContent>
@@ -489,11 +542,13 @@ export function FilterOperator<TData, T extends ColumnDataType>({
 export function FilterOperatorDisplay<TData, T extends ColumnDataType>({
   filter,
   filterType,
+  locale,
 }: {
   filter: FilterModel<T, TData>
   filterType: T
+  locale: Locale
 }) {
-  const details = filterTypeOperatorDetails[filterType][filter.operator]
+  const details = getFilterTypeOperatorDetails(locale)[filterType][filter.operator]
 
   return <span>{details.label}</span>
 }
@@ -501,11 +556,13 @@ export function FilterOperatorDisplay<TData, T extends ColumnDataType>({
 interface FilterOperatorControllerProps<TData> {
   column: Column<TData, unknown>
   closeController: () => void
+  locale?: Locale
 }
 
 export function FilterOperatorController<TData>({
   column,
   closeController,
+  locale,
 }: FilterOperatorControllerProps<TData>) {
   const { type } = column.columnDef.meta!
 
@@ -515,6 +572,7 @@ export function FilterOperatorController<TData>({
         <FilterOperatorOptionController
           column={column}
           closeController={closeController}
+          locale={locale}
         />
       )
     case 'multiOption':
@@ -522,6 +580,7 @@ export function FilterOperatorController<TData>({
         <FilterOperatorMultiOptionController
           column={column}
           closeController={closeController}
+          locale={locale}
         />
       )
     case 'date':
@@ -529,6 +588,7 @@ export function FilterOperatorController<TData>({
         <FilterOperatorDateController
           column={column}
           closeController={closeController}
+          locale={locale}
         />
       )
     case 'text':
@@ -536,6 +596,7 @@ export function FilterOperatorController<TData>({
         <FilterOperatorTextController
           column={column}
           closeController={closeController}
+          locale={locale}
         />
       )
     case 'number':
@@ -543,6 +604,7 @@ export function FilterOperatorController<TData>({
         <FilterOperatorNumberController
           column={column}
           closeController={closeController}
+          locale={locale}
         />
       )
     default:
@@ -553,11 +615,12 @@ export function FilterOperatorController<TData>({
 function FilterOperatorOptionController<TData>({
   column,
   closeController,
+  locale,
 }: FilterOperatorControllerProps<TData>) {
   const filter = column.getFilterValue() as FilterModel<'option', TData>
-  const filterDetails = optionFilterDetails[filter.operator]
+  const filterDetails = getOptionFilterDetails(locale)[filter.operator]
 
-  const relatedFilters = Object.values(optionFilterDetails).filter(
+  const relatedFilters = Object.values(getOptionFilterDetails(locale)).filter(
     (o) => o.target === filterDetails.target,
   )
 
@@ -567,7 +630,7 @@ function FilterOperatorOptionController<TData>({
   }
 
   return (
-    <CommandGroup heading="Operators">
+    <CommandGroup heading={t('operators', locale)}>
       {relatedFilters.map((r) => {
         return (
           <CommandItem onSelect={changeOperator} value={r.value} key={r.value}>
@@ -582,11 +645,12 @@ function FilterOperatorOptionController<TData>({
 function FilterOperatorMultiOptionController<TData>({
   column,
   closeController,
+  locale,
 }: FilterOperatorControllerProps<TData>) {
   const filter = column.getFilterValue() as FilterModel<'multiOption', TData>
-  const filterDetails = multiOptionFilterDetails[filter.operator]
+  const filterDetails = getMultiOptionFilterDetails(locale)[filter.operator]
 
-  const relatedFilters = Object.values(multiOptionFilterDetails).filter(
+  const relatedFilters = Object.values(getMultiOptionFilterDetails(locale)).filter(
     (o) => o.target === filterDetails.target,
   )
 
@@ -596,7 +660,7 @@ function FilterOperatorMultiOptionController<TData>({
   }
 
   return (
-    <CommandGroup heading="Operators">
+    <CommandGroup heading={t('operators', locale)}>
       {relatedFilters.map((r) => {
         return (
           <CommandItem onSelect={changeOperator} value={r.value} key={r.value}>
@@ -611,11 +675,12 @@ function FilterOperatorMultiOptionController<TData>({
 function FilterOperatorDateController<TData>({
   column,
   closeController,
+  locale,
 }: FilterOperatorControllerProps<TData>) {
   const filter = column.getFilterValue() as FilterModel<'date', TData>
-  const filterDetails = dateFilterDetails[filter.operator]
+  const filterDetails = getDateFilterDetails(locale)[filter.operator]
 
-  const relatedFilters = Object.values(dateFilterDetails).filter(
+  const relatedFilters = Object.values(getDateFilterDetails(locale)).filter(
     (o) => o.target === filterDetails.target,
   )
 
@@ -625,7 +690,7 @@ function FilterOperatorDateController<TData>({
   }
 
   return (
-    <CommandGroup>
+    <CommandGroup heading={t('operators', locale)}>
       {relatedFilters.map((r) => {
         return (
           <CommandItem onSelect={changeOperator} value={r.value} key={r.value}>
@@ -640,11 +705,12 @@ function FilterOperatorDateController<TData>({
 export function FilterOperatorTextController<TData>({
   column,
   closeController,
+  locale,
 }: FilterOperatorControllerProps<TData>) {
   const filter = column.getFilterValue() as FilterModel<'text', TData>
-  const filterDetails = textFilterDetails[filter.operator]
+  const filterDetails = getTextFilterDetails(locale)[filter.operator]
 
-  const relatedFilters = Object.values(textFilterDetails).filter(
+  const relatedFilters = Object.values(getTextFilterDetails(locale)).filter(
     (o) => o.target === filterDetails.target,
   )
 
@@ -654,7 +720,7 @@ export function FilterOperatorTextController<TData>({
   }
 
   return (
-    <CommandGroup heading="Operators">
+    <CommandGroup heading={t('operators', locale)}>
       {relatedFilters.map((r) => {
         return (
           <CommandItem onSelect={changeOperator} value={r.value} key={r.value}>
@@ -669,17 +735,18 @@ export function FilterOperatorTextController<TData>({
 function FilterOperatorNumberController<TData>({
   column,
   closeController,
+  locale,
 }: FilterOperatorControllerProps<TData>) {
   const filter = column.getFilterValue() as FilterModel<'number', TData>
 
   // Show all related operators
-  const relatedFilters = Object.values(numberFilterDetails)
+  const relatedFilters = Object.values(getNumberFilterDetails(locale))
   const relatedFilterOperators = relatedFilters.map((r) => r.value)
 
   const changeOperator = (value: (typeof relatedFilterOperators)[number]) => {
     column.setFilterValue((old: typeof filter) => {
       // Clear out the second value when switching to single-input operators
-      const target = numberFilterDetails[value].target
+      const target = getNumberFilterDetails(locale)[value].target
 
       const newValues =
         target === 'single' ? [old.values[0]] : createNumberRange(old.values)
@@ -691,7 +758,7 @@ function FilterOperatorNumberController<TData>({
 
   return (
     <div>
-      <CommandGroup heading="Operators">
+      <CommandGroup heading={t('operators')}>
         {relatedFilters.map((r) => (
           <CommandItem
             onSelect={() => changeOperator(r.value)}
@@ -713,11 +780,13 @@ export function FilterValue<TData, TValue>({
   column,
   columnMeta,
   table,
+  locale,
 }: {
   id: string
   column: Column<TData>
   columnMeta: ColumnMeta<TData, TValue>
   table: Table<TData>
+  locale: Locale
 }) {
   return (
     <Popover>
@@ -745,6 +814,7 @@ export function FilterValue<TData, TValue>({
           column={column}
           columnMeta={columnMeta}
           table={table}
+          locale={locale}
         />
       </PopoverContent>
     </Popover>
@@ -1061,7 +1131,7 @@ export function FilterValueNumberDisplay<TData, TValue>({
     const minValue = filter.values[0]
     const maxValue =
       filter.values[1] === Number.POSITIVE_INFINITY ||
-      filter.values[1] >= cappedMax
+        filter.values[1] >= cappedMax
         ? `${cappedMax}+`
         : filter.values[1]
 
@@ -1085,11 +1155,13 @@ export function FitlerValueController<TData, TValue>({
   column,
   columnMeta,
   table,
+  locale,
 }: {
   id: string
   column: Column<TData>
   columnMeta: ColumnMeta<TData, TValue>
   table: Table<TData>
+  locale: 'en' | 'fr'
 }) {
   switch (columnMeta.type) {
     case 'option':
@@ -1099,6 +1171,7 @@ export function FitlerValueController<TData, TValue>({
           column={column}
           columnMeta={columnMeta}
           table={table}
+          locale={locale}
         />
       )
     case 'multiOption':
@@ -1108,6 +1181,7 @@ export function FitlerValueController<TData, TValue>({
           column={column}
           columnMeta={columnMeta}
           table={table}
+          locale={locale}
         />
       )
     case 'date':
@@ -1117,6 +1191,7 @@ export function FitlerValueController<TData, TValue>({
           column={column}
           columnMeta={columnMeta}
           table={table}
+          locale={locale}
         />
       )
     case 'text':
@@ -1126,6 +1201,7 @@ export function FitlerValueController<TData, TValue>({
           column={column}
           columnMeta={columnMeta}
           table={table}
+          locale={locale}
         />
       )
     case 'number':
@@ -1135,6 +1211,7 @@ export function FitlerValueController<TData, TValue>({
           column={column}
           columnMeta={columnMeta}
           table={table}
+          locale={locale}
         />
       )
     default:
@@ -1147,6 +1224,7 @@ interface ProperFilterValueMenuProps<TData, TValue> {
   column: Column<TData>
   columnMeta: ColumnMeta<TData, TValue>
   table: Table<TData>
+  locale: 'en' | 'fr'
 }
 
 export function FilterValueOptionController<TData, TValue>({
@@ -1154,6 +1232,7 @@ export function FilterValueOptionController<TData, TValue>({
   column,
   columnMeta,
   table,
+  locale,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
     ? (column.getFilterValue() as FilterModel<'option', TData>)
@@ -1242,8 +1321,8 @@ export function FilterValueOptionController<TData, TValue>({
 
   return (
     <Command loop>
-      <CommandInput autoFocus placeholder="Search..." />
-      <CommandEmpty>No results.</CommandEmpty>
+      <CommandInput autoFocus placeholder={t('search', locale)} />
+      <CommandEmpty>{t('noResults', locale)}</CommandEmpty>
       <CommandList className="max-h-fit">
         <CommandGroup>
           {options.map((v) => {
@@ -1298,6 +1377,7 @@ export function FilterValueMultiOptionController<
   column,
   columnMeta,
   table,
+  locale,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue() as
     | FilterModel<'multiOption', TData>
@@ -1342,8 +1422,8 @@ export function FilterValueMultiOptionController<
       const value = columnMeta.options
         ? (curr as string)
         : columnMeta.transformOptionFn!(
-            curr as ElementType<NonNullable<TValue>>,
-          ).value
+          curr as ElementType<NonNullable<TValue>>,
+        ).value
 
       acc[value] = (acc[value] ?? 0) + 1
       return acc
@@ -1376,6 +1456,7 @@ export function FilterValueMultiOptionController<
               old.values,
               newValues,
               old.operator,
+              locale,
             ),
             values: newValues,
             columnMeta: column.columnDef.meta,
@@ -1397,6 +1478,7 @@ export function FilterValueMultiOptionController<
               old.values,
               newValues,
               old.operator,
+              locale,
             ),
             values: newValues,
             columnMeta: column.columnDef.meta,
@@ -1407,8 +1489,8 @@ export function FilterValueMultiOptionController<
 
   return (
     <Command loop>
-      <CommandInput autoFocus placeholder="Search..." />
-      <CommandEmpty>No results.</CommandEmpty>
+      <CommandInput autoFocus placeholder={t('search', locale)} />
+      <CommandEmpty>{t('noResults', locale)}</CommandEmpty>
       <CommandList>
         <CommandGroup>
           {options.map((v) => {
@@ -1457,6 +1539,7 @@ export function FilterValueMultiOptionController<
 
 export function FilterValueDateController<TData, TValue>({
   column,
+  locale,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
     ? (column.getFilterValue() as FilterModel<'date', TData>)
@@ -1525,6 +1608,7 @@ export function FilterValueDateController<TData, TValue>({
 
 export function FilterValueTextController<TData, TValue>({
   column,
+  locale,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
     ? (column.getFilterValue() as FilterModel<'text', TData>)
@@ -1548,7 +1632,7 @@ export function FilterValueTextController<TData, TValue>({
         <CommandGroup>
           <CommandItem>
             <DebouncedInput
-              placeholder="Search..."
+              placeholder={t('search', locale)}
               autoFocus
               value={filter?.values[0] ?? ''}
               onChange={changeText}
@@ -1564,6 +1648,7 @@ export function FilterValueNumberController<TData, TValue>({
   table,
   column,
   columnMeta,
+  locale,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const maxFromMeta = columnMeta.max
   const cappedMax = maxFromMeta ?? Number.MAX_SAFE_INTEGER
@@ -1573,7 +1658,7 @@ export function FilterValueNumberController<TData, TValue>({
     : undefined
 
   const isNumberRange =
-    !!filter && numberFilterDetails[filter.operator].target === 'multiple'
+    !!filter && getNumberFilterDetails(locale)[filter.operator].target === 'multiple'
 
   const [datasetMin] = column.getFacetedMinMaxValues() ?? [0, 0]
 
@@ -1599,7 +1684,7 @@ export function FilterValueNumberController<TData, TValue>({
         }
       }
 
-      const operator = numberFilterDetails[old.operator]
+      const operator = getNumberFilterDetails(locale)[old.operator]
       let newValues: number[]
 
       if (operator.target === 'single') {
@@ -1689,8 +1774,8 @@ export function FilterValueNumberController<TData, TValue>({
               }
             >
               <TabsList className="w-full *:text-xs">
-                <TabsTrigger value="single">Single</TabsTrigger>
-                <TabsTrigger value="range">Range</TabsTrigger>
+                <TabsTrigger value="single">{t('single', locale)}</TabsTrigger>
+                <TabsTrigger value="range">{t('range', locale)}</TabsTrigger>
               </TabsList>
               <TabsContent value="single" className="flex flex-col gap-4 mt-4">
                 <Slider
@@ -1704,7 +1789,7 @@ export function FilterValueNumberController<TData, TValue>({
                   aria-orientation="horizontal"
                 />
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium">Value</span>
+                  <span className="text-xs font-medium">{t('value', locale)}</span>
                   <Input
                     id="single"
                     type="number"
@@ -1725,7 +1810,7 @@ export function FilterValueNumberController<TData, TValue>({
                 />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium">Min</span>
+                    <span className="text-xs font-medium">{t('min', locale)}</span>
                     <Input
                       type="number"
                       value={inputValues[0]}
@@ -1734,7 +1819,7 @@ export function FilterValueNumberController<TData, TValue>({
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium">Max</span>
+                    <span className="text-xs font-medium">{t('max', locale)}</span>
                     <Input
                       type="text"
                       value={inputValues[1]}

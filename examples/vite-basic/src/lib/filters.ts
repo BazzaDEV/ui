@@ -72,8 +72,8 @@ export function defineMeta<
 }
 
 /*
- * Represents a possible value for a column property of type 'option' or 'multiOption'.
- */
+* Represents a possible value for a column property of type 'option' or 'multiOption'.
+*/
 export interface ColumnOption {
   /* The label to display for the option. */
   label: string
@@ -84,8 +84,8 @@ export interface ColumnOption {
 }
 
 /*
- * Represents the data type of a column.
- */
+* Represents the data type of a column.
+*/
 export type ColumnDataType =
   /* The column value is a string that should be searchable. */
   | 'text'
@@ -152,14 +152,14 @@ export type FilterTypes = {
 }
 
 /*
- *
- * FilterValue is a type that represents a filter value for a specific column.
- *
- * It consists of:
- * - Operator: The operator to be used for the filter.
- * - Values: An array of values to be used for the filter.
- *
- */
+*
+* FilterValue is a type that represents a filter value for a specific column.
+*
+* It consists of:
+* - Operator: The operator to be used for the filter.
+* - Values: An array of values to be used for the filter.
+*
+*/
 export type FilterModel<T extends ColumnDataType, TData> = {
   operator: FilterOperators[T]
   values: Array<FilterTypes[T]>
@@ -167,8 +167,8 @@ export type FilterModel<T extends ColumnDataType, TData> = {
 }
 
 /*
- * FilterDetails is a type that represents the details of all the filter operators for a specific column data type.
- */
+* FilterDetails is a type that represents the details of all the filter operators for a specific column data type.
+*/
 export type FilterDetails<T extends ColumnDataType> = {
   [key in FilterOperators[T]]: FilterOperatorDetails<key, T>
 }
@@ -195,11 +195,11 @@ type FilterOperatorDetailsBase<OperatorValue, T extends ColumnDataType> = {
 }
 
 /*
- *
- * FilterOperatorDetails is a type that provides details about a filter operator for a specific column data type.
- * It extends FilterOperatorDetailsBase with additional logic and contraints on the defined properties.
- *
- */
+*
+* FilterOperatorDetails is a type that provides details about a filter operator for a specific column data type.
+* It extends FilterOperatorDetailsBase with additional logic and contraints on the defined properties.
+*
+*/
 export type FilterOperatorDetails<
   OperatorValue,
   T extends ColumnDataType,
@@ -214,351 +214,419 @@ export type FilterOperatorDetails<
     | { isNegated: true; negation?: never; negationOf: FilterOperators[T] }
   )
 
+
+type Locale = 'en' | 'fr'
+
+const translations = {
+  en: {
+    is: 'is',
+    isNot: 'is not',
+    isBefore: 'is before',
+    isOnOrAfter: 'is on or after',
+    isAfter: 'is after',
+    isOnOrBefore: 'is on or before',
+    isBetween: 'is between',
+    isNotBetween: 'is not between',
+    contains: 'contains',
+    doesNotContain: 'does not contain',
+    include: 'include',
+    exclude: 'exclude',
+    includeAnyOf: 'include any of',
+    includeAllOf: 'include all of',
+    excludeIfAnyOf: 'exclude if any of',
+    excludeIfAll: 'exclude if all',
+    isGreaterThan: 'is greater than',
+    isGreaterThanOrEqualTo: 'is greater than or equal to',
+    isLessThanOrEqualTo: 'is less than or equal to',
+    isLessThan: 'is less than',
+  },
+  fr: {
+    is: 'est',
+    isNot: "n'est pas",
+    isBefore: 'est avant',
+    isOnOrAfter: 'est le ou après',
+    isAfter: 'est après',
+    isOnOrBefore: 'est le ou avant',
+    isBetween: 'est entre',
+    isNotBetween: "n'est pas entre",
+    contains: 'contient',
+    doesNotContain: 'ne contient pas',
+    include: 'inclure',
+    exclude: 'exclure',
+    includeAnyOf: 'inclure un de',
+    includeAllOf: 'inclure tous',
+    excludeIfAnyOf: 'exclure si un de',
+    excludeIfAll: 'exclure si tous',
+    isGreaterThan: 'est supérieur à',
+    isGreaterThanOrEqualTo: 'est supérieur ou égal à',
+    isLessThanOrEqualTo: 'est inférieur ou égal à',
+    isLessThan: 'est inférieur à',
+  },
+};
+
+// Helper function to get the translation
+function t(key: keyof typeof translations["en"], lang: keyof typeof translations = "en") {
+  return translations[lang][key] || translations["en"][key];
+}
+
 /* Details for all the filter operators for option data type */
-export const optionFilterDetails = {
-  is: {
-    label: 'is',
-    value: 'is',
-    target: 'single',
-    singularOf: 'is not',
-    relativeOf: 'is any of',
-    isNegated: false,
-    negation: 'is not',
-  },
-  'is not': {
-    label: 'is not',
-    value: 'is not',
-    target: 'single',
-    singularOf: 'is',
-    relativeOf: 'is none of',
-    isNegated: true,
-    negationOf: 'is',
-  },
-  'is any of': {
-    label: 'is any of',
-    value: 'is any of',
-    target: 'multiple',
-    pluralOf: 'is',
-    relativeOf: 'is',
-    isNegated: false,
-    negation: 'is none of',
-  },
-  'is none of': {
-    label: 'is none of',
-    value: 'is none of',
-    target: 'multiple',
-    pluralOf: 'is not',
-    relativeOf: 'is not',
-    isNegated: true,
-    negationOf: 'is any of',
-  },
-} as const satisfies FilterDetails<'option'>
+export function getOptionFilterDetails(locale: Locale = "en") {
+  return {
+    is: {
+      label: t('is', locale),
+      value: 'is',
+      target: 'single',
+      singularOf: 'is not',
+      relativeOf: 'is any of',
+      isNegated: false,
+      negation: 'is not',
+    },
+    'is not': {
+      label: t('isNot', locale),
+      value: 'is not',
+      target: 'single',
+      singularOf: 'is',
+      relativeOf: 'is none of',
+      isNegated: true,
+      negationOf: 'is',
+    },
+    'is any of': {
+      label: t('includeAnyOf', locale),
+      value: 'is any of',
+      target: 'multiple',
+      pluralOf: 'is',
+      relativeOf: 'is',
+      isNegated: false,
+      negation: 'is none of',
+    },
+    'is none of': {
+      label: t('excludeIfAnyOf', locale),
+      value: 'is none of',
+      target: 'multiple',
+      pluralOf: 'is not',
+      relativeOf: 'is not',
+      isNegated: true,
+      negationOf: 'is any of',
+    },
+  } as const satisfies FilterDetails<'option'>
+}
 
 /* Details for all the filter operators for multi-option data type */
-export const multiOptionFilterDetails = {
-  include: {
-    label: 'include',
-    value: 'include',
-    target: 'single',
-    singularOf: 'include any of',
-    relativeOf: 'exclude',
-    isNegated: false,
-    negation: 'exclude',
-  },
-  exclude: {
-    label: 'exclude',
-    value: 'exclude',
-    target: 'single',
-    singularOf: 'exclude if any of',
-    relativeOf: 'include',
-    isNegated: true,
-    negationOf: 'include',
-  },
-  'include any of': {
-    label: 'include any of',
-    value: 'include any of',
-    target: 'multiple',
-    pluralOf: 'include',
-    relativeOf: ['exclude if all', 'include all of', 'exclude if any of'],
-    isNegated: false,
-    negation: 'exclude if all',
-  },
-  'exclude if all': {
-    label: 'exclude if all',
-    value: 'exclude if all',
-    target: 'multiple',
-    pluralOf: 'exclude',
-    relativeOf: ['include any of', 'include all of', 'exclude if any of'],
-    isNegated: true,
-    negationOf: 'include any of',
-  },
-  'include all of': {
-    label: 'include all of',
-    value: 'include all of',
-    target: 'multiple',
-    pluralOf: 'include',
-    relativeOf: ['include any of', 'exclude if all', 'exclude if any of'],
-    isNegated: false,
-    negation: 'exclude if any of',
-  },
-  'exclude if any of': {
-    label: 'exclude if any of',
-    value: 'exclude if any of',
-    target: 'multiple',
-    pluralOf: 'exclude',
-    relativeOf: ['include any of', 'exclude if all', 'include all of'],
-    isNegated: true,
-    negationOf: 'include all of',
-  },
-} as const satisfies FilterDetails<'multiOption'>
+export function getMultiOptionFilterDetails(locale: Locale = "en") {
+  return {
+    include: {
+      label: t('include', locale),
+      value: 'include',
+      target: 'single',
+      singularOf: 'include any of',
+      relativeOf: 'exclude',
+      isNegated: false,
+      negation: 'exclude',
+    },
+    exclude: {
+      label: t('exclude', locale),
+      value: 'exclude',
+      target: 'single',
+      singularOf: 'exclude if any of',
+      relativeOf: 'include',
+      isNegated: true,
+      negationOf: 'include',
+    },
+    'include any of': {
+      label: t('includeAnyOf', locale),
+      value: 'include any of',
+      target: 'multiple',
+      pluralOf: 'include',
+      relativeOf: ['exclude if all', 'include all of', 'exclude if any of'],
+      isNegated: false,
+      negation: 'exclude if all',
+    },
+    'exclude if all': {
+      label: t('excludeIfAll', locale),
+      value: 'exclude if all',
+      target: 'multiple',
+      pluralOf: 'exclude',
+      relativeOf: ['include any of', 'include all of', 'exclude if any of'],
+      isNegated: true,
+      negationOf: 'include any of',
+    },
+    'include all of': {
+      label: t('includeAllOf', locale),
+      value: 'include all of',
+      target: 'multiple',
+      pluralOf: 'include',
+      relativeOf: ['include any of', 'exclude if all', 'exclude if any of'],
+      isNegated: false,
+      negation: 'exclude if any of',
+    },
+    'exclude if any of': {
+      label: t('excludeIfAnyOf', locale),
+      value: 'exclude if any of',
+      target: 'multiple',
+      pluralOf: 'exclude',
+      relativeOf: ['include any of', 'exclude if all', 'include all of'],
+      isNegated: true,
+      negationOf: 'include all of',
+    },
+  } as const satisfies FilterDetails<'multiOption'>
+}
 
 /* Details for all the filter operators for date data type */
-export const dateFilterDetails = {
-  is: {
-    label: 'is',
-    value: 'is',
-    target: 'single',
-    singularOf: 'is between',
-    relativeOf: 'is after',
-    isNegated: false,
-    negation: 'is before',
-  },
-  'is not': {
-    label: 'is not',
-    value: 'is not',
-    target: 'single',
-    singularOf: 'is not between',
-    relativeOf: [
-      'is',
-      'is before',
-      'is on or after',
-      'is after',
-      'is on or before',
-    ],
-    isNegated: true,
-    negationOf: 'is',
-  },
-  'is before': {
-    label: 'is before',
-    value: 'is before',
-    target: 'single',
-    singularOf: 'is between',
-    relativeOf: [
-      'is',
-      'is not',
-      'is on or after',
-      'is after',
-      'is on or before',
-    ],
-    isNegated: false,
-    negation: 'is on or after',
-  },
-  'is on or after': {
-    label: 'is on or after',
-    value: 'is on or after',
-    target: 'single',
-    singularOf: 'is between',
-    relativeOf: ['is', 'is not', 'is before', 'is after', 'is on or before'],
-    isNegated: false,
-    negation: 'is before',
-  },
-  'is after': {
-    label: 'is after',
-    value: 'is after',
-    target: 'single',
-    singularOf: 'is between',
-    relativeOf: [
-      'is',
-      'is not',
-      'is before',
-      'is on or after',
-      'is on or before',
-    ],
-    isNegated: false,
-    negation: 'is on or before',
-  },
-  'is on or before': {
-    label: 'is on or before',
-    value: 'is on or before',
-    target: 'single',
-    singularOf: 'is between',
-    relativeOf: ['is', 'is not', 'is after', 'is on or after', 'is before'],
-    isNegated: false,
-    negation: 'is after',
-  },
-  'is between': {
-    label: 'is between',
-    value: 'is between',
-    target: 'multiple',
-    pluralOf: 'is',
-    relativeOf: 'is not between',
-    isNegated: false,
-    negation: 'is not between',
-  },
-  'is not between': {
-    label: 'is not between',
-    value: 'is not between',
-    target: 'multiple',
-    pluralOf: 'is not',
-    relativeOf: 'is between',
-    isNegated: true,
-    negationOf: 'is between',
-  },
-} as const satisfies FilterDetails<'date'>
+export function getDateFilterDetails(locale: Locale = "en") {
+  return {
+    is: {
+      label: t('is', locale),
+      value: 'is',
+      target: 'single',
+      singularOf: 'is between',
+      relativeOf: 'is after',
+      isNegated: false,
+      negation: 'is before',
+    },
+    'is not': {
+      label: t('isNot', locale),
+      value: 'is not',
+      target: 'single',
+      singularOf: 'is not between',
+      relativeOf: [
+        'is',
+        'is before',
+        'is on or after',
+        'is after',
+        'is on or before',
+      ],
+      isNegated: true,
+      negationOf: 'is',
+    },
+    'is before': {
+      label: t('isBefore', locale),
+      value: 'is before',
+      target: 'single',
+      singularOf: 'is between',
+      relativeOf: [
+        'is',
+        'is not',
+        'is on or after',
+        'is after',
+        'is on or before',
+      ],
+      isNegated: false,
+      negation: 'is on or after',
+    },
+    'is on or after': {
+      label: t('isOnOrAfter', locale),
+      value: 'is on or after',
+      target: 'single',
+      singularOf: 'is between',
+      relativeOf: ['is', 'is not', 'is before', 'is after', 'is on or before'],
+      isNegated: false,
+      negation: 'is before',
+    },
+    'is after': {
+      label: t('isAfter', locale),
+      value: 'is after',
+      target: 'single',
+      singularOf: 'is between',
+      relativeOf: [
+        'is',
+        'is not',
+        'is before',
+        'is on or after',
+        'is on or before',
+      ],
+      isNegated: false,
+      negation: 'is on or before',
+    },
+    'is on or before': {
+      label: t('isOnOrBefore', locale),
+      value: 'is on or before',
+      target: 'single',
+      singularOf: 'is between',
+      relativeOf: ['is', 'is not', 'is after', 'is on or after', 'is before'],
+      isNegated: false,
+      negation: 'is after',
+    },
+    'is between': {
+      label: t('isBetween', locale),
+      value: 'is between',
+      target: 'multiple',
+      pluralOf: 'is',
+      relativeOf: 'is not between',
+      isNegated: false,
+      negation: 'is not between',
+    },
+    'is not between': {
+      label: t('isNotBetween', locale),
+      value: 'is not between',
+      target: 'multiple',
+      pluralOf: 'is not',
+      relativeOf: 'is between',
+      isNegated: true,
+      negationOf: 'is between',
+    },
+  } as const satisfies FilterDetails<'date'>
+}
 
 /* Details for all the filter operators for text data type */
-export const textFilterDetails = {
-  contains: {
-    label: 'contains',
-    value: 'contains',
-    target: 'single',
-    relativeOf: 'does not contain',
-    isNegated: false,
-    negation: 'does not contain',
-  },
-  'does not contain': {
-    label: 'does not contain',
-    value: 'does not contain',
-    target: 'single',
-    relativeOf: 'contains',
-    isNegated: true,
-    negationOf: 'contains',
-  },
-} as const satisfies FilterDetails<'text'>
+export function getTextFilterDetails(locale: Locale = "en") {
+  return {
+    contains: {
+      label: t('contains', locale),
+      value: 'contains',
+      target: 'single',
+      relativeOf: 'does not contain',
+      isNegated: false,
+      negation: 'does not contain',
+    },
+    'does not contain': {
+      label: t('doesNotContain', locale),
+      value: 'does not contain',
+      target: 'single',
+      relativeOf: 'contains',
+      isNegated: true,
+      negationOf: 'contains',
+    },
+  } as const satisfies FilterDetails<'text'>
+}
 
 /* Details for all the filter operators for number data type */
-export const numberFilterDetails = {
-  is: {
-    label: 'is',
-    value: 'is',
-    target: 'single',
-    relativeOf: [
-      'is not',
-      'is greater than',
-      'is less than or equal to',
-      'is less than',
-      'is greater than or equal to',
-    ],
-    isNegated: false,
-    negation: 'is not',
-  },
-  'is not': {
-    label: 'is not',
-    value: 'is not',
-    target: 'single',
-    relativeOf: [
-      'is',
-      'is greater than',
-      'is less than or equal to',
-      'is less than',
-      'is greater than or equal to',
-    ],
-    isNegated: true,
-    negationOf: 'is',
-  },
-  'is greater than': {
-    label: '>',
-    value: 'is greater than',
-    target: 'single',
-    relativeOf: [
-      'is',
-      'is not',
-      'is less than or equal to',
-      'is less than',
-      'is greater than or equal to',
-    ],
-    isNegated: false,
-    negation: 'is less than or equal to',
-  },
-  'is greater than or equal to': {
-    label: '>=',
-    value: 'is greater than or equal to',
-    target: 'single',
-    relativeOf: [
-      'is',
-      'is not',
-      'is greater than',
-      'is less than or equal to',
-      'is less than',
-    ],
-    isNegated: false,
-    negation: 'is less than or equal to',
-  },
-  'is less than': {
-    label: '<',
-    value: 'is less than',
-    target: 'single',
-    relativeOf: [
-      'is',
-      'is not',
-      'is greater than',
-      'is less than or equal to',
-      'is greater than or equal to',
-    ],
-    isNegated: false,
-    negation: 'is greater than',
-  },
-  'is less than or equal to': {
-    label: '<=',
-    value: 'is less than or equal to',
-    target: 'single',
-    relativeOf: [
-      'is',
-      'is not',
-      'is greater than',
-      'is less than',
-      'is greater than or equal to',
-    ],
-    isNegated: false,
-    negation: 'is greater than or equal to',
-  },
-  'is between': {
-    label: 'is between',
-    value: 'is between',
-    target: 'multiple',
-    relativeOf: 'is not between',
-    isNegated: false,
-    negation: 'is not between',
-  },
-  'is not between': {
-    label: 'is not between',
-    value: 'is not between',
-    target: 'multiple',
-    relativeOf: 'is between',
-    isNegated: true,
-    negationOf: 'is between',
-  },
-} as const satisfies FilterDetails<'number'>
+export function getNumberFilterDetails(locale: Locale = "en") {
+  return {
+    is: {
+      label: t('is', locale),
+      value: 'is',
+      target: 'single',
+      relativeOf: [
+        'is not',
+        'is greater than',
+        'is less than or equal to',
+        'is less than',
+        'is greater than or equal to',
+      ],
+      isNegated: false,
+      negation: 'is not',
+    },
+    'is not': {
+      label: t('isNot', locale),
+      value: 'is not',
+      target: 'single',
+      relativeOf: [
+        'is',
+        'is greater than',
+        'is less than or equal to',
+        'is less than',
+        'is greater than or equal to',
+      ],
+      isNegated: true,
+      negationOf: 'is',
+    },
+    'is greater than': {
+      label: t('isGreaterThan', locale),
+      value: 'is greater than',
+      target: 'single',
+      relativeOf: [
+        'is',
+        'is not',
+        'is less than or equal to',
+        'is less than',
+        'is greater than or equal to',
+      ],
+      isNegated: false,
+      negation: 'is less than or equal to',
+    },
+    'is greater than or equal to': {
+      label: t('isGreaterThanOrEqualTo', locale),
+      value: 'is greater than or equal to',
+      target: 'single',
+      relativeOf: [
+        'is',
+        'is not',
+        'is greater than',
+        'is less than or equal to',
+        'is less than',
+      ],
+      isNegated: false,
+      negation: 'is less than or equal to',
+    },
+    'is less than': {
+      label: t('isLessThan', locale),
+      value: 'is less than',
+      target: 'single',
+      relativeOf: [
+        'is',
+        'is not',
+        'is greater than',
+        'is less than or equal to',
+        'is greater than or equal to',
+      ],
+      isNegated: false,
+      negation: 'is greater than',
+    },
+    'is less than or equal to': {
+      label: t('isLessThanOrEqualTo', locale),
+      value: 'is less than or equal to',
+      target: 'single',
+      relativeOf: [
+        'is',
+        'is not',
+        'is greater than',
+        'is less than',
+        'is greater than or equal to',
+      ],
+      isNegated: false,
+      negation: 'is greater than or equal to',
+    },
+    'is between': {
+      label: t('isBetween', locale),
+      value: 'is between',
+      target: 'multiple',
+      relativeOf: 'is not between',
+      isNegated: false,
+      negation: 'is not between',
+    },
+    'is not between': {
+      label: t('isNotBetween', locale),
+      value: 'is not between',
+      target: 'multiple',
+      relativeOf: 'is between',
+      isNegated: true,
+      negationOf: 'is between',
+    },
+  } as const satisfies FilterDetails<'number'>
+}
 
 /* Maps column data types to their respective filter operator details */
 type FilterTypeOperatorDetails = {
   [key in ColumnDataType]: FilterDetails<key>
 }
 
-export const filterTypeOperatorDetails: FilterTypeOperatorDetails = {
-  text: textFilterDetails,
-  number: numberFilterDetails,
-  date: dateFilterDetails,
-  option: optionFilterDetails,
-  multiOption: multiOptionFilterDetails,
+export function getFilterTypeOperatorDetails(locale: Locale = "en"): FilterTypeOperatorDetails {
+  return {
+    text: getTextFilterDetails(locale),
+    number: getNumberFilterDetails(locale),
+    date: getDateFilterDetails(locale),
+    option: getOptionFilterDetails(locale),
+    multiOption: getMultiOptionFilterDetails(locale),
+  }
 }
 
 /*
- *
- * Determines the new operator for a filter based on the current operator, old and new filter values.
- *
- * This handles cases where the filter values have transitioned from a single value to multiple values (or vice versa),
- * and the current operator needs to be transitioned to its plural form (or singular form).
- *
- * For example, if the current operator is 'is', and the new filter values have a length of 2, the
- * new operator would be 'is any of'.
- *
- */
+*
+* Determines the new operator for a filter based on the current operator, old and new filter values.
+*
+* This handles cases where the filter values have transitioned from a single value to multiple values (or vice versa),
+* and the current operator needs to be transitioned to its plural form (or singular form).
+*
+* For example, if the current operator is 'is', and the new filter values have a length of 2, the
+* new operator would be 'is any of'.
+*
+*/
 export function determineNewOperator<T extends ColumnDataType>(
   type: T,
   oldVals: Array<FilterTypes[T]>,
   nextVals: Array<FilterTypes[T]>,
   currentOperator: FilterOperators[T],
+  locale: Locale = 'en',
 ): FilterOperators[T] {
   const a =
     Array.isArray(oldVals) && Array.isArray(oldVals[0])
@@ -574,7 +642,7 @@ export function determineNewOperator<T extends ColumnDataType>(
   if (a === b || (a >= 2 && b >= 2) || (a <= 1 && b <= 1))
     return currentOperator
 
-  const opDetails = filterTypeOperatorDetails[type][currentOperator]
+  const opDetails = getFilterTypeOperatorDetails(locale)[type][currentOperator]
 
   // Handle transition from single to multiple filter values.
   if (a < b && b >= 2) return opDetails.singularOf ?? currentOperator
@@ -585,21 +653,21 @@ export function determineNewOperator<T extends ColumnDataType>(
 
 /**********************************************************************************************************
  ***** Filter Functions ******
- **********************************************************************************************************
- * These are functions that filter data based on the current filter values, column data type, and operator.
- * There exists a separate filter function for each column data type.
- *
- * Two variants of the filter functions are provided - as an example, we will take the optionFilterFn:
- * 1. optionFilterFn: takes in a row, columnId, and filterValue.
- * 2. __optionFilterFn: takes in an inputData and filterValue.
- *
- * __optionFilterFn is a private function that is used by filterFn to perform the actual filtering.
- * *********************************************************************************************************/
+**********************************************************************************************************
+* These are functions that filter data based on the current filter values, column data type, and operator.
+* There exists a separate filter function for each column data type.
+*
+* Two variants of the filter functions are provided - as an example, we will take the optionFilterFn:
+* 1. optionFilterFn: takes in a row, columnId, and filterValue.
+* 2. __optionFilterFn: takes in an inputData and filterValue.
+*
+* __optionFilterFn is a private function that is used by filterFn to perform the actual filtering.
+* *********************************************************************************************************/
 
 /*
- * Returns a filter function for a given column data type.
- * This function is used to determine the appropriate filter function to use based on the column data type.
- */
+* Returns a filter function for a given column data type.
+* This function is used to determine the appropriate filter function to use based on the column data type.
+*/
 export function filterFn(dataType: ColumnDataType) {
   switch (dataType) {
     case 'option':
@@ -760,7 +828,7 @@ export function __dateFilterFn<TData>(
   if (!filterValue || filterValue.values.length === 0) return true
 
   if (
-    dateFilterDetails[filterValue.operator].target === 'single' &&
+    getDateFilterDetails()[filterValue.operator].target === 'single' &&
     filterValue.values.length > 1
   )
     throw new Error('Singular operators require at most one filter value')

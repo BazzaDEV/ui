@@ -16,7 +16,7 @@ export default function DataTableWrapper<TData>({
   return (
     <div className="w-full">
       <div className="flex items-center py-4 gap-2">
-        <DataTableFilter table={table} />
+        <DataTableFilter table={table} locale='en' />
       </div>
       <div className="rounded-md border bg-white dark:bg-inherit">
         <Table>
