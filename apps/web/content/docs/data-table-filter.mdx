@@ -190,6 +190,42 @@ export default function DataTable() {
 }
 ```
 
+### Localization
+
+The `<DataTableFilter />` component now supports localization!
+
+You can use the optional `locale` prop to control the language of the filter UI.
+
+Supported locales:
+
+- `"en"` (default) — English  
+- `"fr"` — French
+
+Example usage:
+
+```tsx {6}
+import { DataTableFilter } from '@/components/data-table-filter'
+
+export default function DataTable() {
+  return (
+    <div>
+      <DataTableFilter table={table} locale="fr" />
+      <div className="rounded-md border">
+        <Table>
+          {/* ... */}
+        </Table>
+      </div>
+    </div>
+  )
+}
+```
+
+If you don't provide a `locale` prop, it will default to `"en"`.
+
+> [!NOTE]
+> More languages will be supported in future updates!
+
+
 ### Update columns
 
 #### Updating your columns
