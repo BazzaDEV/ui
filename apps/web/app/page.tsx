@@ -131,7 +131,7 @@ export default function Page() {
           <p className="text-base tracking-[-0.01em] font-[510] text-muted-foreground leading-none">
             Want to support bazza/ui?{' '}
             <Link
-              href="/"
+              href="mailto:kian@bazza.dev?subject=bazza%2Fui%20-%20I%20want%20to%20sponsor%20you&body=Hey%20Kian%2C"
               className="relative text-neutral-800 dark:text-neutral-200 group/sponsor-link hover:underline underline-offset-2"
             >
               Become a sponsor.
